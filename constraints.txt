@@ -1,0 +1,2 @@
+
+pkg_resources===9999.0.0  # This prevents installation
