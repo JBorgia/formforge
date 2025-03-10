@@ -16,6 +16,12 @@ def get_db_connection():
         print(f"Database connection failed: {e}")
         return None
 
+# Root route to confirm API is running
+@app.get("/")
+def home():
+    return {"message": "FastAPI is running!"}
+
+# Database test route
 @app.get("/db-test")
 def test_db():
     """Test the database connection by retrieving the current timestamp."""
