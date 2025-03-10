@@ -9,12 +9,6 @@ app = FastAPI()
 DATABASE_URL = os.getenv("DATABASE_URL")
 MONGO_URI = os.getenv("MONGO_URI")
 
-# Connect to MongoDB
-mongo_client = MongoClient(MONGO_URI)
-db = mongo_client["formforge"]  # Database name
-forms_collection = db["forms"]  # Collection for storing forms
-ai_metadata_collection = db["ai_metadata"]  # Collection for AI metadata
-
 def get_db_connection():
     """Create a connection to the Supabase PostgreSQL database."""
     try:
@@ -24,15 +18,23 @@ def get_db_connection():
         print(f"Database connection failed: {e}")
         return None
 
-# Root route to confirm API is running
+def get_mongo_client():
+    """Lazy-load MongoDB connection."""
+    try:
+        client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)  # 5-second timeout
+        client.admin.command("ping")  # Test connection
+        return client
+    except Exception as e:
+        print(f"MongoDB connection error: {e}")
+        return None
+
 @app.get("/")
 def home():
     return {"message": "FastAPI is running!"}
 
-# Database test route
 @app.get("/db-test")
 def test_db():
-    """Test the database connection by retrieving the current timestamp."""
+    """Test PostgreSQL connection."""
     conn = get_db_connection()
     if not conn:
         return {"error": "Database connection failed"}
@@ -44,12 +46,12 @@ def test_db():
     
     return {"database_time": db_time[0]}
 
-# MongoDB test route
 @app.get("/mongo-test")
 def test_mongo():
     """Test MongoDB connection."""
-    try:
-        count = forms_collection.count_documents({})
-        return {"message": f"MongoDB is connected! {count} forms found."}
-    except Exception as e:
-        return {"error": f"MongoDB connection failed: {e}"}
+    client = get_mongo_client()
+    if not client:
+        return {"error": "MongoDB connection failed"}
+    
+    db = client["formforge"]  # Connect to the correct database
+  
