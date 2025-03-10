@@ -13,6 +13,11 @@ app = FastAPI()
 DATABASE_URL = os.getenv("DATABASE_URL")
 MONGO_URI = os.getenv("MONGO_URI")
 
+print(f"✅ FastAPI using MONGO_URI: {MONGO_URI}")
+
+if MONGO_URI != "mongodb+srv://formforge:formforge2488@formforge-cluster.gic7g.mongodb.net/?retryWrites=true&w=majority&appName=FormForge-Cluster":
+    print("❌ MONGO_URI is incorrect! Check your .env file or environment variables.")
+
 
 def get_db_connection():
     """Create a connection to the Supabase PostgreSQL database."""
